@@ -1,0 +1,23 @@
+body { 
+    max-width: 600px; 
+    margin: 1em auto;
+    background-color: #f7f2e6;
+    font-family: Georgia, Times, serif;
+    font-size: 18px }
+.speechblock { margin-bottom: 1em }
+.sentence:hover { background-color: yellow }
+hr { 
+    height: 27px;
+    border: 0;
+    background-color: #c0c0c0 }
+hr::after {
+    background: red;
+    color: #f7f2e6;
+    font-weight: bold;
+    content: attr(data-tooltip);
+    padding: 3px 7px;
+    position: absolute;
+    visibility: hidden;
+}
+hr:hover { background-color: red }
+hr:hover::after { visibility: visible }

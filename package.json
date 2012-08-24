@@ -1,0 +1,22 @@
+{
+  "description": "Web app for segmenting texts.",
+  "version": "0.0.0",
+  "private": true,
+  "dependencies": {
+    "union": "0.3.x",
+    "flatiron": "0.2.x",
+    "redis": "0.7.x",
+    "ecstatic": "0.1.x"
+  },
+  "devDependencies": {
+    "api-easy": "0.3.x",
+    "vows": "0.6.x"
+  },
+  "scripts": {
+    "test": "vows --spec",
+    "start": "node app.js"
+  },
+  "name": "segment",
+  "author": "Ryan Shaw",
+  "homepage": ""
+}
