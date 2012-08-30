@@ -14,7 +14,7 @@ redis database structure
 
 There is a [set](http://redis.io/commands/#set) of interview IDs.
 ```
-SADD "interviews" "U-0098"
+SADD "interviews" "interviews:U-0098"
 ```
 
 The sentences of each interview are stored as a
@@ -60,11 +60,20 @@ HMSET "sentences:280853"
   "interview" "interviews:U-0098"
 ```
 
-__TODO__ design and document database structure for storing multiple
-annotators' segmentations of each transcript.
+There is a set of annotator IDs.
+```
+SADD "annotators" "annotators:jsmith"
+```
 
+Each annotator has a set of seen interviews.
+```
+SADD "annotators:jsmith:seen" "interviews:U-0098"
+```
 
-
+Each annotator's segmentation of an interview is represented by a set of sentence IDs, corresponding to the sentences immediately after each segment division.
+```
+SADD "annotators:jsmith:segmentation:U-0098" "sentences:280853"
+```
 
 
 

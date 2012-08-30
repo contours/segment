@@ -6,18 +6,18 @@ body {
     font-size: 18px }
 .speechblock { margin-bottom: 1em }
 .sentence:hover { background-color: yellow }
-hr { 
+hr.segment { 
     height: 27px;
     border: 0;
     background-color: #c0c0c0 }
-hr::after {
+hr.segment::after {
     background: red;
     color: #f7f2e6;
     font-weight: bold;
-    content: attr(data-tooltip);
+    content: "click to remove";
     padding: 3px 7px;
     position: absolute;
     visibility: hidden;
 }
-hr:hover { background-color: red }
-hr:hover::after { visibility: visible }
+hr.segment:hover { background-color: red }
+hr.segment:hover::after { visibility: visible }

@@ -6,7 +6,10 @@
     "union": "0.3.x",
     "flatiron": "0.2.x",
     "redis": "0.7.x",
-    "ecstatic": "0.1.x"
+    "ecstatic": "0.1.x",
+    "connect": "*",
+    "flow": "*",
+    "partial": "*"
   },
   "devDependencies": {
     "api-easy": "0.3.x",
