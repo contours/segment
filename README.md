@@ -70,7 +70,7 @@ Each annotator has a set of seen interviews.
 SADD "annotators:jsmith:seen" "interviews:U-0098"
 ```
 
-Each annotator's segmentation of an interview is represented by a set of sentence IDs, corresponding to the sentences immediately after each segment division.
+Each annotator's segmentation of an interview is represented by a set of sentence IDs, corresponding to the sentences immediately after each segment division. Tat is, each sentence ID in the set is the beginning of a new segment.
 ```
 SADD "annotators:jsmith:segmentation:U-0098" "sentences:280853"
 ```

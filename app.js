@@ -130,6 +130,7 @@ app.router.get('/interview/:id', function (interview_id) {
   res.write('</head>');
   res.write('<body>');
   db.sadd('annotators:'+req.session.username+':seen', 'interviews:'+interview_id);
+  // TODO: write <hr>s for existing segments
   flow.exec(
     function() {
       db.lrange('interviews:' + interview_id + ':sentences', 0, -1, this);
@@ -156,6 +157,38 @@ app.router.get('/interview/:id', function (interview_id) {
           res.end('</p></body>');
         });
     });
+});
+
+app.router.post('/insertSegment', function () {
+  var res = this.res
+    , req = this.req;
+  var username = req.session.username;
+  var sentence_id = req.body.sentence_id;
+  if(!username || !sentence_id) {
+    res.statusCode = 400;
+    res.end('Bad request');
+    return;
+  }
+  app.log.info('User '+username+' inserted segment '+sentence_id);
+  // TODO: insert to db
+  res.statusCode = 200;
+  res.end();
+});
+
+app.router.post('/deleteSegment', function () {
+  var res = this.res
+    , req = this.req;
+  var username = req.session.username;
+  var sentence_id = req.body.sentence_id;
+  if(!username || !sentence_id) {
+    res.statusCode = 400;
+    res.end('Bad request');
+    return;
+  }
+  app.log.info('User '+username+' deleted segment '+sentence_id);
+  // TODO: delete from db
+  res.statusCode = 200;
+  res.end();
 });
 
 app.start(app.config.get('port') || 8080, function (err) {
