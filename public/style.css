@@ -21,3 +21,9 @@ hr.segment::after {
 }
 hr.segment:hover { background-color: red }
 hr.segment:hover::after { visibility: visible }
+
+.donebutton {
+    text-align: center;
+    background-color: #d08080;
+}
+

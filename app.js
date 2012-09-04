@@ -86,9 +86,9 @@ app.router.get('/', function () {
   res.write('<p>Hello, ' + req.session.username + '. Select an interview to begin. Not ' + req.session.username + '? <a href="/login">Log in</a>.</p>');
   flow.exec(
     function() {
-      res.write('<h2>unseen interviews</h2>');
+      res.write('<h2>interviews</h2>');
       res.write('<ul>');
-      db.sdiff('interviews', 'annotators:'+req.session.username+':seen', this);
+      db.sdiff('interviews', 'annotators:'+req.session.username+':done', this);
     },function(err, interviews) {
       if(err) throw err;
       interviews.sort();
@@ -100,19 +100,23 @@ app.router.get('/', function () {
       this();
     },
     function() {
-      res.write('<h2>seen interviews</h2>');
+      res.write('<h2>interviews marked done</h2>');
       res.write('<ul>');
-      db.smembers('annotators:'+req.session.username+':seen', this);
+      db.smembers('annotators:'+req.session.username+':done', this);
     },function(err, interviews) {
       if(err) throw err;
-      interviews.sort();
-      interviews.forEach(
-        function(interview, interview_index) {
-          var id = interview.split(':')[1];
-          res.write('<li><a href="/interview/' + id + '">'
-                    + id + '</a></li>');
-        });
-      res.write('</ul>');
+      if(interviews.length === 0) {
+        res.write('<p>- none -</p>');
+      } else {
+        interviews.sort();
+        interviews.forEach(
+            function(interview, interview_index) {
+              var id = interview.split(':')[1];
+              res.write('<li><a href="/interview/' + id + '">'
+                + id + '</a></li>');
+            });
+        res.write('</ul>');
+      }
       res.end('</body>');
     });
 });
@@ -130,7 +134,6 @@ app.router.get('/interview/:id', function (interview_id) {
   res.write('<script src="/function.js"></script>');
   res.write('</head>');
   res.write('<body>');
-  db.sadd('annotators:'+req.session.username+':seen', 'interviews:'+interview_id);
   var last_speechblock = null
     , last_speaker = null;
   flow.exec(
@@ -165,6 +168,7 @@ app.router.get('/interview/:id', function (interview_id) {
       db.smembers('annotators:'+req.session.username+':segmentation:'+interview_id, this);
     },function(err, sentences) {
       if(err) throw err;
+      // restore segment marking <hr>s on page load
       res.write('<script type="text/javascript">');
       res.write('Zepto(function($){');
       sentences.forEach(function(sentence_id) {
@@ -172,6 +176,12 @@ app.router.get('/interview/:id', function (interview_id) {
       });
       res.write('});');
       res.write('</script>');
+
+      // "done" button
+      res.write('<form action="/markDone" method="POST">');
+      res.write('<input type="hidden" name="interview_id" value="'+interview_id+'"/>');
+      res.write('<p class="donebutton"><input type="submit" value="Mark as Done" /></p>');
+      res.write('</form>');
       res.end('</body>');
     });
 });
@@ -207,6 +217,15 @@ app.router.post('/deleteSegment', function () {
   db.srem('annotators:'+username+':segmentation:'+interview_id, sentence_id);
   app.log.info('User '+username+' deleted segment '+sentence_id+' from interview '+interview_id);
   res.statusCode = 200;
+  res.end();
+});
+
+app.router.post('/markDone', function () {
+  var res = this.res
+    , req = this.req;
+  db.sadd('annotators:'+req.session.username+':done', 'interviews:'+req.body.interview_id);
+  res.statusCode = 303; // see other
+  res.setHeader('Location', '/');
   res.end();
 });
 
