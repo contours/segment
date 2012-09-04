@@ -1,3 +1,4 @@
+/* vim: ts=2:sw=2 */
 var flatiron = require('flatiron')
   , sys = require('sys')
   , path = require('path')
@@ -89,6 +90,7 @@ app.router.get('/', function () {
       res.write('<ul>');
       db.sdiff('interviews', 'annotators:'+req.session.username+':seen', this);
     },function(err, interviews) {
+      if(err) throw err;
       interviews.sort();
       interviews.forEach(function(interview, interview_index) {
         var id = interview.split(':')[1];
@@ -102,6 +104,7 @@ app.router.get('/', function () {
       res.write('<ul>');
       db.smembers('annotators:'+req.session.username+':seen', this);
     },function(err, interviews) {
+      if(err) throw err;
       interviews.sort();
       interviews.forEach(
         function(interview, interview_index) {
@@ -116,9 +119,7 @@ app.router.get('/', function () {
 
 app.router.get('/interview/:id', function (interview_id) {
   var res = this.res
-    , req = this.req
-    , speaker = null
-    , speechblock = null;
+    , req = this.req;
   res.statusCode = 200;
   res.setHeader('content-type', 'text/html; charset=utf-8');
   res.write('<!doctype html>');
@@ -130,32 +131,48 @@ app.router.get('/interview/:id', function (interview_id) {
   res.write('</head>');
   res.write('<body>');
   db.sadd('annotators:'+req.session.username+':seen', 'interviews:'+interview_id);
-  // TODO: write <hr>s for existing segments
+  var last_speechblock = null
+    , last_speaker = null;
   flow.exec(
     function() {
       db.lrange('interviews:' + interview_id + ':sentences', 0, -1, this);
     },function(err, sentences) {
+      if(err) throw err;
       flow.serialForEach(sentences,
-        function(sentence) {
-          db.hgetall(sentence, partial(this,sentence));
-        },function(sentence, err, o) {
-          if (o.speechblock !== speechblock) {
-            if (speechblock !== null) {
+        // called for each sentence
+        function(sentence_id) {
+          db.hgetall(sentence_id, partial(this,sentence_id));
+        // callback for each iteration
+        },function(sentence_id, err, o) {
+          if(err) throw err;
+          if (o.speechblock !== last_speechblock) {
+            if (last_speechblock !== null) {
               res.write('</p>');
             }
-            res.write('<p class="speechblock" id="' + speechblock + '">');
-            if (o.speaker !== speaker) {
+            res.write('<p class="speechblock" id="' + o.speechblock + '">');
+            if (o.speaker !== last_speaker) {
               res.write('<span class="speaker">' 
                 + o.speaker.split('/')[1] + ':</span> ');
             }
-            speaker = o.speaker;
-            speechblock = o.speechblock;
+            last_speaker = o.speaker;
+            last_speechblock = o.speechblock;
           }
-          res.write('<span class="sentence" id="' + sentence + '">'
-            + o.text + '</span> ');
-        },function() {
-          res.end('</p></body>');
-        });
+          res.write('<span class="sentence" id="' + sentence_id + '">' + o.text + '</span> ');
+        // called after all iterations are done
+        }, this);
+    },function() {
+      res.write('</p>');
+      db.smembers('annotators:'+req.session.username+':segmentation:'+interview_id, this);
+    },function(err, sentences) {
+      if(err) throw err;
+      res.write('<script type="text/javascript">');
+      res.write('Zepto(function($){');
+      sentences.forEach(function(sentence_id) {
+        res.write('insertSegment(document.getElementById("'+sentence_id+'"),true);');
+      });
+      res.write('});');
+      res.write('</script>');
+      res.end('</body>');
     });
 });
 
@@ -163,14 +180,15 @@ app.router.post('/insertSegment', function () {
   var res = this.res
     , req = this.req;
   var username = req.session.username;
+  var interview_id = req.body.interview_id;
   var sentence_id = req.body.sentence_id;
-  if(!username || !sentence_id) {
+  if(!username || !interview_id || !sentence_id) {
     res.statusCode = 400;
     res.end('Bad request');
     return;
   }
-  app.log.info('User '+username+' inserted segment '+sentence_id);
-  // TODO: insert to db
+  db.sadd('annotators:'+username+':segmentation:'+interview_id, sentence_id);
+  app.log.info('User '+username+' inserted segment '+sentence_id+' to interview '+interview_id);
   res.statusCode = 200;
   res.end();
 });
@@ -179,20 +197,21 @@ app.router.post('/deleteSegment', function () {
   var res = this.res
     , req = this.req;
   var username = req.session.username;
+  var interview_id = req.body.interview_id;
   var sentence_id = req.body.sentence_id;
-  if(!username || !sentence_id) {
+  if(!username || !interview_id || !sentence_id) {
     res.statusCode = 400;
     res.end('Bad request');
     return;
   }
-  app.log.info('User '+username+' deleted segment '+sentence_id);
-  // TODO: delete from db
+  db.srem('annotators:'+username+':segmentation:'+interview_id, sentence_id);
+  app.log.info('User '+username+' deleted segment '+sentence_id+' from interview '+interview_id);
   res.statusCode = 200;
   res.end();
 });
 
 app.start(app.config.get('port') || 8080, function (err) {
-  if (err) { throw err }
+  if(err) throw err;
   var addr = app.server.address();
   app.log.info('listening on http://' + addr.address + ':' + addr.port);
 });
