@@ -65,13 +65,27 @@ There is a set of annotator IDs.
 SADD "annotators" "annotators:jsmith"
 ```
 
-Each annotator has a set of interviews they've marked as done.
+Each annotator has a bcrypt-ed password. The annotator named "admin" is privileged.
 ```
-SADD "annotators:jsmith:done" "interviews:U-0098"
+SET "annotators:jsmith:password" "<hash goes here>"
+SET "annotators:admin:password" "<hash goes here>"
 ```
 
-Each annotator's segmentation of an interview is represented by a set of sentence IDs, corresponding to the sentences immediately after each segment division. Tat is, each sentence ID in the set is the beginning of a new segment.
+A dataset is a set of interview IDs to be segmented. One dataset is "active".
 ```
-SADD "annotators:jsmith:segmentation:U-0098" "sentences:280853"
+SADD "datasets" "datasets:foo"
+SADD "datasets:foo" "interviews:U-0098"
+SET "active-dataset" "datasets:foo"
+```
+
+Each annotator has a set of interviews in each dataset that they've marked as done, and possibly a most recently viewed interview.
+```
+SADD "annotators:jsmith:datasets:foo:done" "interviews:U-0098"
+SET "annotators:jsmith:datasets:foo:mru" "interviews:U-0098"
+```
+
+Each annotator's segmentation of an interview is represented by a set of sentence IDs, corresponding to the sentences immediately after each segment division. That is, each sentence ID in the set marks the beginning of a segment. Each segmentation is associated with one dataset.
+```
+SADD "annotators:jsmith:datasets:foo:interviews:U-0098" "sentences:280853"
 ```
 
