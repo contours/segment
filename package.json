@@ -9,7 +9,8 @@
     "ecstatic": "0.1.x",
     "connect": "*",
     "flow": "*",
-    "partial": "*"
+    "partial": "*",
+    "bcrypt": "*"
   },
   "devDependencies": {
     "api-easy": "0.3.x",
