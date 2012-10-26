@@ -28,8 +28,15 @@ hr.segment:hover::after { visibility: visible }
 }
 
 .marker {
-    background-color: #000000;
-    width: 5px;
     position: absolute;
+    width: 10px;
 }
+.marker:hover { background-color: red }
+.excerptmarker {
+    background-color: #990000;
+}
+.emptymarker {
+    background-color: #c0c0c0;
+}
+
 

@@ -261,8 +261,16 @@ app.router.get('/interview/:id', function (interview_name) {
     sentences.forEach(function(sentence_id) {
       res.write('insertSegment(document.getElementById("'+sentence_id+'"),true);');
     });
+    // restore excerpt markers
+    db.smembers(annotator_id+':'+active_dataset_id+':'+interview_id+':excerpts', this);
+  },function(err, excerpts) {
+    if(err) throw err;
+    excerpts.forEach(function(sentence_id) {
+      res.write('toggleExcerpt(document.getElementById("'+sentence_id+':marker"),true);');
+    });
     res.write('});');
-    // and set a kludgey global
+
+    // set a kludgey global (see function.js)
     res.write('_DATASET_ID = \''+active_dataset_id+'\';');
     res.write('</script>');
 
@@ -313,11 +321,53 @@ app.router.post('/deleteSegment', function () {
   res.end();
 });
 
+app.router.post('/setExcerpt', function() {
+  var res = this.res
+    , req = this.req;
+  var username = req.session.username;
+  var dataset_id = req.body.dataset_id;
+  var interview_id = req.body.interview_id;
+  var sentence_id = req.body.sentence_id;
+  if(!username || !interview_id || !sentence_id) {
+    res.statusCode = 400;
+    res.end('Bad request');
+    return;
+  }
+  db.sadd('annotators:'+username+':'+dataset_id+':'+interview_id+':excerpts', sentence_id);
+  app.log.info('User '+username+' flagged segment '+sentence_id+' as an excerpt, in interview '+interview_id+' in data set '+dataset_id);
+  res.statusCode = 200;
+  res.end();
+});
+
+app.router.post('/unsetExcerpt', function() {
+  var res = this.res
+    , req = this.req;
+  var username = req.session.username;
+  var dataset_id = req.body.dataset_id;
+  var interview_id = req.body.interview_id;
+  var sentence_id = req.body.sentence_id;
+  if(!username || !interview_id || !sentence_id) {
+    res.statusCode = 400;
+    res.end('Bad request');
+    return;
+  }
+  db.srem('annotators:'+username+':'+dataset_id+':'+interview_id+':excerpts', sentence_id);
+  app.log.info('User '+username+' unflagged segment '+sentence_id+' as an excerpt, in interview '+interview_id+' in data set '+dataset_id);
+  res.statusCode = 200;
+  res.end();
+});
+
 app.router.post('/markDone', function () {
   var res = this.res
     , req = this.req;
-  db.sadd('annotators:'+req.session.username+':'+req.body.dataset_id+':done', req.body.interview_id, function(err) {
+  var annotator_id = 'annotators:'+req.session.username;
+  var segmentation_id = annotator_id+':'+req.body.dataset_id+':'+req.body.interview_id;
+  db.sadd(annotator_id+':'+req.body.dataset_id+':done', req.body.interview_id, function(err) {
     if(err) throw err;
+    db.sadd('segmentations', segmentation_id);
+    db.sadd(req.body.interview_id+':segmentations', segmentation_id);
+    db.sadd(annotator_id+':segmentations', segmentation_id);
+    db.sadd(req.body.dataset_id+':segmentations', segmentation_id);
     res.statusCode = 303; // see other
     res.setHeader('Location', '/');
     res.end();

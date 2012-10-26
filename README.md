@@ -89,3 +89,16 @@ Each annotator's segmentation of an interview is represented by a set of sentenc
 SADD "annotators:jsmith:datasets:foo:interviews:U-0098" "sentences:280853"
 ```
 
+Each segment may optionally be flagged as being an "excerpt". This does not change the structure of the segmentation.
+```
+SADD "annotators:jsmith:datasets:foo:interviews:U-0098:excerpts" "sentences:280853"
+```
+
+After a segmentation is marked as done, it's added to a number of indices.
+```
+SADD "segmentations" "annotators:jsmith:datasets:foo:interviews:U-0098"
+SADD "annotators:jsmith:segmentations" "annotators:jsmith:datasets:foo:interviews:U-0098"
+SADD "datasets:foo:segmentations" "annotators:jsmith:datasets:foo:interviews:U-0098"
+SADD "interviews:U-0098:segmentations" "annotators:jsmith:datasets:foo:interviews:U-0098"
+```
+
