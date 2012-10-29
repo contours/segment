@@ -74,6 +74,7 @@ function drawMarkers() {
         // end the previous marker
         marker.css('height', prev_bottom - marker_top);
         marker.appendTo(document.body);
+        marker = null;
       }
       // start a new marker
       marker = $('<div class="marker" />');
@@ -90,7 +91,11 @@ function drawMarkers() {
     }
     prev_bottom = $(this).offset().top + $(this).offset().height;
   });
-  // TODO: end marker at end of document?
+  // end the final marker
+  if(marker) {
+    marker.css('height', prev_bottom - marker_top);
+    marker.appendTo(document.body);
+  }
 }
 
 Zepto(function($) {
