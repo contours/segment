@@ -76,7 +76,6 @@ function drawMarkers() {
         marker.appendTo(document.body);
       }
       // start a new marker
-      var o = $(this).offset();
       marker = $('<div class="marker" />');
       marker.attr('id', sentence_id+':marker');
       marker.attr('sentence_id', sentence_id);
@@ -85,9 +84,9 @@ function drawMarkers() {
       } else {
         marker.addClass('emptymarker');
       }
-      marker.css('top', o.top);
-      marker.css('left', o.left - 15);
-      marker_top = o.top;
+      marker.css('top', $(this).offset().top);
+      marker.css('left', $(this).parent().offset().left - 15);
+      marker_top = $(this).offset().top;
     }
     prev_bottom = $(this).offset().top + $(this).offset().height;
   });
