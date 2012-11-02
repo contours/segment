@@ -11,6 +11,6 @@ HOST=$1
 
 git archive --format=zip --prefix=segment/ HEAD -o segment.zip
 scp segment.zip $HOST:
-ssh $HOST 'unzip -u segment.zip && cd segment && npm install'
+ssh $HOST 'unzip -u -o segment.zip && cd segment && npm install'
 rm -f segment.zip
 
