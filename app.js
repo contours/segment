@@ -13,12 +13,6 @@ var flatiron = require('flatiron')
   , app = flatiron.app
   ;
 
-// configuration
-// ----
-var INITIAL_ADMIN_PASSWORD = 'correct horse battery staple';
-var BCRYPT_ROUNDS = 8;
-// ----
-
 // utilities
 _.mixin({
   // {a: [1,2], b: [2,3]} -> {1: [a], 2: [a,b], 3: [b]}
@@ -648,8 +642,9 @@ app.start(app.config.get('port') || 8080, function (err) {
   db.exists('annotators:admin:password', function(err,exists) {
     if(err) throw err;
     if(!exists) {
-      var p = INITIAL_ADMIN_PASSWORD;
-      db.set('annotators:admin:password', bcrypt.hashSync(p, BCRYPT_ROUNDS));
+      var p = app.config.get('admin-password') || 'nervous orbit somehow silly';
+      db.set('annotators:admin:password', 
+        bcrypt.hashSync(p, app.config.get('bcrypt-rounds') || 8));
       app.log.info('The administrator password has been initialized to: '+p);
     }
   });
