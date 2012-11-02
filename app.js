@@ -551,17 +551,18 @@ app.router.post('/deleteAnnotator', ensureAdmin(function(req,res){
 
 app.router.post('/setPassword', ensureAdmin(function(req,res){
   var target_annotator_id = 'annotators:'+req.body.username;
-  bcrypt.hash(req.body.password, BCRYPT_ROUNDS, function(err, hash) {
-    if(err) throw err;
-    db.multi()
-      .set(target_annotator_id+':password', hash)
-      .sadd('annotators', target_annotator_id)
-      .exec(function() {
-        res.statusCode = 303;
-        res.setHeader('Location', '/admin');
-        res.end();
-      });
-  });
+  bcrypt.hash(req.body.password, app.config.get('bcrypt-rounds') || 8, 
+    function(err, hash) {
+      if(err) throw err;
+      db.multi()
+        .set(target_annotator_id+':password', hash)
+        .sadd('annotators', target_annotator_id)
+        .exec(function() {
+          res.statusCode = 303;
+          res.setHeader('Location', '/admin');
+          res.end();
+        });
+    });
 }));
 
 // Constructs a segmentation object (for one interview) according to
