@@ -79,6 +79,7 @@ function writeHeader(res,title) {
   res.write('<script src="/function.js"></script>');
   res.write('</head>');
   res.write('<body>');
+  res.write('<header><nav><a target="_blank" href="/instructions.html">click for instructions</a></nav></header>');
 }
 
 function writeFooter(res) {

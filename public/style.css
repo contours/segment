@@ -4,6 +4,13 @@ body {
     background-color: #f7f2e6;
     font-family: Georgia, Times, serif;
     font-size: 18px }
+header { 
+    background-color: black;
+    padding: 5px }
+header a { 
+    color: #f7f2e6;
+    text-decoration: none }
+header a:hover { color: yellow }
 .speechblock { margin-bottom: 1em }
 .sentence:hover { background-color: yellow }
 hr.segment { 
@@ -21,12 +28,10 @@ hr.segment::after {
 }
 hr.segment:hover { background-color: red }
 hr.segment:hover::after { visibility: visible }
-
 .donebutton {
     text-align: center;
     background-color: #d08080;
 }
-
 .marker {
     position: absolute;
     width: 10px;
