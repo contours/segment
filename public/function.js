@@ -57,7 +57,7 @@ function toggleExcerpt(marker,dontPost) {
       url = '/unsetExcerpt';
     } else {
       url = '/setExcerpt';
-    } 
+    }
     $.post(url, { dataset_id: _DATASET_ID, interview_id: interview_id, sentence_id: sentence_id });
   }
 }
@@ -104,6 +104,22 @@ Zepto(function($) {
     .on('click', 'span.sentence', function(e){insertSegment(e.target)})
     .on('click', 'hr', function(e){deleteSegment(e.target)})
     .on('click', '.marker', function(e){toggleExcerpt(e.target)})
+  window.onresize = debounce(drawMarkers,50,false);
   drawMarkers();
 });
+
+// courtesy of http://unscriptable.com/2009/03/20/debouncing-javascript-methods/
+function debounce(func, threshold, execAsap) {
+  var timeout;
+  return function debounced() {
+    var obj = this, args = arguments;
+    function delayed() {
+      if(!execAsap) func.apply(obj, args);
+      timeout = null;
+    };
+    if(timeout) clearTimeout(timeout);
+    else if(execAsap) func.apply(obj, args);
+    timeout = setTimeout(delayed, threshold || 100);
+  };
+}
 
