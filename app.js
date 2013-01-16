@@ -585,13 +585,11 @@ function getSegmentation(dataset_id, interview_id, annotator_ids, callback) {
       });
       indices.sort(_.sub); // ascending
       // transform segment indices to segment masses by subtracting each index from the one after it, starting with an extra 0 at the beginning.
+      // also need the total mass for the last segment.
+      indices.push(sentences.length);
       segs[annotator_id] = _.initial(_.zipWith(_.sub, indices, _.cons(0,indices)));
     }, function() {
-      callback({
-        "id": interview_id,
-        "segmentation_type": "linear",
-        "items": segs
-      });
+      callback(segs);
     });
   });
 }
@@ -620,16 +618,16 @@ app.router.get('/dataset/:id', function(dataset_name) {
     }, this);
   },function() {
     var interview_annotators = _.multimap_invert(annotator_interviews);
-    var segs = [];
+    var segs = {};
     flow.serialForEach(_.keys(interview_annotators), function(interview_id) {
-      getSegmentation(dataset_id, interview_id, interview_annotators[interview_id], this);
-    },function(seg) {
-      segs.push(seg);
+      getSegmentation(dataset_id, interview_id, interview_annotators[interview_id], partial(this,interview_id));
+    },function(interview_id,seg) {
+      segs[interview_id] = seg;
     },function() {
       res.write(JSON.stringify({
         id: dataset_id,
-        annotators: _.keys(annotator_interviews),
-        interviews: segs
+        segmentation_type: "linear",
+        items: segs
       }));
       res.end();
     });
