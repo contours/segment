@@ -35,9 +35,9 @@ The sentences of each speechblock are stored as list of sentence IDs.
 RPUSH "speechblocks:U-0098/37:sentences" "sentences:280853"
 ```
 
-The speakers of each interview are stored as a set of speaker IDs.
+The speakers of each interview are stored as a list of speaker IDs.
 ```
-SADD "interviews:U-0098:speakers" "speakers:U-0098/TAWANA BELINDA WILSON-ALLEN"
+RPUSH "interviews:U-0098:speakers" "speakers:U-0098/TAWANA BELINDA WILSON-ALLEN"
 ```
 
 The sentences of each speaker are stored as a list of sentence IDs.
